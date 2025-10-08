@@ -10,14 +10,12 @@ import PackageDescription
 // Optional overrides from environment
 let env = ProcessInfo.processInfo.environment
 let envOS = env["PP_BUILD_OS"]
-let envCoreDeployment = env["PP_BUILD_CORE"].map(CoreDeployment.init(rawValue:)) ?? nil
 let envCMakeOutput = env["PP_BUILD_CMAKE_OUTPUT"]
 
 // MARK: Configuration
 
 let areas = Set(Area.allCases)
 let cryptoMode: CryptoMode? = .openSSL
-let coreDeployment = envCoreDeployment ?? .remoteBinary
 let cmakeOutput = envCMakeOutput ?? ".bin/windows-arm64"
 
 // Must be false in production (check in CI)
@@ -26,7 +24,7 @@ let isTestingOpenVPNDataPath = false
 // MARK: - Package
 
 // PartoutCore binaries only available on Apple platforms
-guard OS.current == .apple || coreDeployment != .remoteBinary else {
+guard OS.current == .apple else {
     fatalError("Core binary only available on Apple platforms")
 }
 
@@ -554,29 +552,11 @@ let binaryFilename = "PartoutCore.xcframework.zip"
 let version = "0.99.194"
 let checksum = "52fe447406569a07989346a437f5a5f42bb7b760ad3af6c0f1bc220860847ec4"
 
-enum CoreDeployment: String, RawRepresentable {
-    case remoteBinary
-    case localSource
-}
-
-switch coreDeployment {
-case .remoteBinary:
-    package.targets.append(.binaryTarget(
-        name: "PartoutCoreWrapper",
-        url: "https://github.com/partout-io/partout/releases/download/\(version)/\(binaryFilename)",
-        checksum: checksum
-    ))
-case .localSource:
-    package.dependencies.append(
-        .package(path: "vendors/core")
-    )
-    package.targets.append(.target(
-        name: "PartoutCoreWrapper",
-        dependencies: [
-            .product(name: "PartoutCore", package: "core")
-        ]
-    ))
-}
+package.targets.append(.binaryTarget(
+    name: "PartoutCoreWrapper",
+    url: "https://github.com/partout-io/partout/releases/download/\(version)/\(binaryFilename)",
+    checksum: checksum
+))
 package.targets.append(contentsOf: [
     .testTarget(
         name: "PartoutCoreWrapperTests",
