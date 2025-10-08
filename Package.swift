@@ -557,6 +557,7 @@ package.targets.append(.binaryTarget(
     url: "https://github.com/partout-io/partout/releases/download/\(version)/\(binaryFilename)",
     checksum: checksum
 ))
+
 package.targets.append(contentsOf: [
     .testTarget(
         name: "PartoutCoreWrapperTests",
